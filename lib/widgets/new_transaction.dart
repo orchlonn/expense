@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function addTx;
@@ -11,23 +12,45 @@ class NewTransaction extends StatefulWidget {
 
 class _NewTransactionState extends State<NewTransaction> {
   final titleController = TextEditingController();
-
   final amountController = TextEditingController();
+  DateTime? _selectedDate;
 
   void submitData() {
+    if (amountController.text.isEmpty) {
+      return;
+    }
     final enteredTitle = titleController.text;
     final enteredAmount = double.parse(amountController.text);
 
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+    if (enteredAmount <= 0 || _selectedDate == null) {
       return;
     }
 
     widget.addTx(
       enteredTitle,
       enteredAmount,
+      _selectedDate,
     );
 
     Navigator.of(context).pop();
+  }
+
+  void _presentPicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2019),
+      lastDate: DateTime.now(),
+    ).then((pickedDate) {
+      if (pickedDate == null) {
+        return null;
+      }
+
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+      // return (_selectedDate);
+    });
   }
 
   @override
@@ -53,22 +76,35 @@ class _NewTransactionState extends State<NewTransaction> {
               onSubmitted: (_) => submitData(),
               // onChanged: (val) => amountInput = val,
             ),
-            Row(
-              children: [
-                Text("Choose a day!"),
-                TextButton(
-                  onPressed: null,
-                  child: Text("Choose day."),
-                  style: TextButton.styleFrom(
-                    primary: Colors.purple,
+            Container(
+              height: 70,
+              child: Row(
+                children: <Widget>[
+                  Flexible(
+                    fit: FlexFit.tight,
+                    child: Text(_selectedDate == null
+                        ? "Огноогоо сонгоно уу!"
+                        : DateFormat.yMd().format(_selectedDate!)),
                   ),
-                )
-              ],
+                  TextButton(
+                    onPressed: _presentPicker,
+                    child: Text(
+                      "Choose day.",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                        primary: Theme.of(context).primaryColor,
+                        textStyle: TextStyle()),
+                  ),
+                ],
+              ),
             ),
-            FlatButton(
+            ElevatedButton(
               child: Text('Зарлага нэмэх'),
-              textColor: Colors.purple,
               onPressed: submitData,
+              style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).primaryColor,
+              ),
             )
           ],
         ),

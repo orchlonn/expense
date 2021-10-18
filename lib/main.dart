@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import './widgets/transaction_list.dart';
 import './widgets/new_transaction.dart';
 import './models/transaction.dart';
 import './widgets/chart.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -21,8 +27,16 @@ class MyApp extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
+              button: TextStyle(color: Colors.white),
             ),
-        appBarTheme: AppBarTheme(),
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith(
+                headline1: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              ),
+        ),
       ),
       home: MyHomePage(),
     );
@@ -60,12 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  void _addNewTransaction(String txTitle, double txAmount) {
+  void _addNewTransaction(
+      String txTitle, double txAmount, DateTime chosenDate) {
     final newTx = Transaction(
       id: DateTime.now().toString(),
       title: txTitle,
       amount: txAmount,
-      date: DateTime.now(),
+      date: chosenDate,
     );
 
     setState(() {
@@ -81,25 +96,62 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((tx) => tx.id == id);
+    });
+  }
+
+  bool _showchart = false;
+
   @override
   Widget build(BuildContext context) {
+    final appBar = AppBar(
+      title: Text('Flutter App'),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _startAddNewTransaction(context),
+        )
+      ],
+    );
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Flutter App'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _startAddNewTransaction(context),
-          )
-        ],
-      ),
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Chart(_recentTransactions),
-            TransactionList(_userTransactions),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('show graphics'),
+                Switch(
+                    value: _showchart,
+                    onChanged: (val) {
+                      setState(() {
+                        _showchart = val;
+                      });
+                      print(_showchart);
+                    }),
+              ],
+            ),
+            _showchart
+                ? Container(
+                    child: Chart(_recentTransactions),
+                    height: (MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).padding.top -
+                            appBar.preferredSize.height) *
+                        0.7,
+                  )
+                : Container(
+                    child:
+                        TransactionList(_userTransactions, deleteTransaction),
+                    height: (MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).padding.top -
+                            appBar.preferredSize.height) *
+                        0.7,
+                  ),
           ],
         ),
       ),

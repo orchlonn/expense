@@ -7,7 +7,8 @@ class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
   final Function deleteTx;
 
-  TransactionList(this.transactions, this.deleteTx);
+  // ignore: use_key_in_widget_constructors
+  const TransactionList(this.transactions, this.deleteTx);
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +19,8 @@ class TransactionList extends StatelessWidget {
                 children: <Widget>[
                   Text('Одоогоор зарлагын мэдээлэл байхгүй',
                       style: Theme.of(context).textTheme.headline1),
-                  SizedBox(height: 20),
-                  Container(
+                  const SizedBox(height: 20),
+                  SizedBox(
                       height: contraints.maxHeight * 0.6,
                       child: Image.asset(
                         'assets/images/waiting.png',
@@ -32,7 +33,8 @@ class TransactionList extends StatelessWidget {
               itemBuilder: (ctx, index) {
                 return Card(
                   elevation: 5,
-                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                   child: ListTile(
                     leading: CircleAvatar(
                       radius: 30,
@@ -44,16 +46,25 @@ class TransactionList extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      '${transactions[index].title}',
+                      transactions[index].title,
                       style: Theme.of(context).textTheme.headline6,
                     ),
                     subtitle: Text(
-                        '${DateFormat.yMMMMd().format(transactions[index].date)}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      color: Theme.of(context).errorColor,
-                      onPressed: () => deleteTx(transactions[index].id),
-                    ),
+                        DateFormat.yMMMMd().format(transactions[index].date)),
+                    trailing: MediaQuery.of(context).size.width > 460
+                        ? TextButton.icon(
+                            icon: const Icon(Icons.delete),
+                            label: const Text("Устгах"),
+                            style: TextButton.styleFrom(
+                              primary: Theme.of(context).errorColor,
+                            ),
+                            onPressed: () => deleteTx(transactions[index].id),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.delete),
+                            color: Theme.of(context).errorColor,
+                            onPressed: () => deleteTx(transactions[index].id),
+                          ),
                   ),
                 );
               },
